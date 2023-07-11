@@ -1,14 +1,19 @@
-import {
-    WebSocketServer
-} from 'ws';
+import { createServer } from 'https';
+import { readFileSync } from 'fs';
+import { WebSocketServer } from 'ws';
 
 export default class GameServer {
 
     constructor() {
 
-        this.wss = new WebSocketServer({
-            port: 3000,
+        const server = createServer({
+            cert : readFileSync('./certs/cert.pem'),
+            key  : readFileSync('./certs/key.pem')
         });
+
+        server.listen(3000);
+
+        this.wss = new WebSocketServer({ server });
 
         this.rooms = new Map();
 
