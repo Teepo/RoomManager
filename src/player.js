@@ -1,9 +1,10 @@
 export class Player {
 
-    constructor({ login, socket }) {
+    constructor({ id, login, socket }) {
         
-        this.login = login;
-        this.socket = socket;
+        this.id      = id;
+        this.login   = login;
+        this.socket  = socket;
         this.isReady = false;
     }
 }

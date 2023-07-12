@@ -5,13 +5,8 @@
 
 			<v-container>
 				<v-btn class="bg-primary" @click="createRoom">CREATE ROOM</v-btn>
-				<v-btn class="bg-primary" @click="start">START GAME</v-btn>
-				<v-btn class="bg-primary ml-5" @click="reset">RESET GAME</v-btn>
+				<v-btn class="bg-primary ml-5" @click="start">START GAME</v-btn>
 				<v-btn class="bg-primary ml-5" @click="return_to_lobby">RETURN TO LOBBY</v-btn>
-			</v-container>
-
-			<v-container>
-				<v-btn class="bg-primary" @click="cleanPlayers">CLEAN PLAYERS</v-btn>
 			</v-container>
 
 			<div class="text-h6 mb-1">ROOMS</div>
@@ -32,6 +27,9 @@
 				</tbody>
 			</v-table>
 
+			<v-container>
+				<v-btn class="bg-primary" @click="cleanPlayers">CLEAN PLAYERS</v-btn>
+			</v-container>
 			<div class="text-h6 mb-1">PLAYERS</div>
 			<v-table class="text-left">
 				<thead>
@@ -61,7 +59,7 @@
 
 <script>
 
-
+import { io } from 'socket.io-client';
 
 export default {
 
@@ -75,40 +73,37 @@ export default {
     
     async mounted() {
         
-        this.socket = new WebSocket(`wss://92.222.23.73:3000`);
+        this.socket = new io(`wss://92.222.23.73:3000`);
 
-        this.socket.addEventListener('open', () => {
-            this.socket.send(JSON.stringify({ type: 'getRooms' }));
+        this.socket.on('connect', () => {
+            this.socket.emit('getRooms');
         });
 
-        this.socket.addEventListener('message', event => {
-            
-            const { type, data } = JSON.parse(event.data);
+		this.socket.on('getRooms', data => {
 
-            switch (type) {
-                case 'getRooms':
-                    this.handleGetRooms(data);
-                break;
-				case 'createRoom':
-                    this.handleCreateRoom(data);
-                break;
-                default:
-                    console.error(`this method is not handled ${type}`, event);
-                break;
-            }
+			const { rooms } = data;
+
+			this.handleGetRooms(rooms);
+        });
+
+		this.socket.on('createdRoom', data => {
+			this.handleCreateRoom(data);
         });
     },
     methods : {
 
 		createRoom() {
-			
-			this.socket.send(JSON.stringify({ type: 'createRoom', data : {
+
+			console.log('emit', this.socket)
+
+			this.socket.emit('createRoom', {
                 roomName : 'petank'
-            }}));
+            });
 		},
 
         handleGetRooms(data) {
-            console.log('handleGetRooms', data)
+
+			this.rooms = data;
         },
 
 		handleCreateRoom(data) {

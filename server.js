@@ -1,9 +1,13 @@
 import { createServer } from 'https';
 import { readFileSync } from 'fs';
-import { WebSocketServer } from 'ws';
+import { Server } from 'socket.io';
+
+import { v4 as uuidv4 } from 'uuid';
 
 import { Room } from './src/room.js';
 import { Player } from './src/player.js';
+
+import { UserAlreadyExistError } from './src/errors/index.js';
 
 export default class GameServer {
 
@@ -18,17 +22,32 @@ export default class GameServer {
 
         server.listen(3000);
 
-        this.wss = new WebSocketServer({ server });
+        this.ws = new Server(server, {
+            cors: {
+                origin: '*',
+                credentials: true
+            }
+        });
 
         this.rooms = new Map();
 
         // Gérer les connexions des joueurs
-        this.wss.on('connection', socket => {
+        this.ws.on('connection', socket => {
 
-            console.log('client connect');
+            socket.on('joinRoom', data => {
+                this.handleJoinRoom(socket, data);
+            });
 
-            socket.on('message', message => {
-                this.handleMessage(socket, message);
+            socket.on('getPlayersRoom', data => {
+                this.handleGetPlayersRoom(socket, data);
+            });
+
+            socket.on('createRoom', data => {
+                this.handleCreateRoom(socket, data);
+            });
+
+            socket.on('getRooms', () => {
+                this.handleGetRooms(socket);
             });
 
             socket.on('close', () => {
@@ -45,20 +64,43 @@ export default class GameServer {
 
         if (room) {
 
-            room.addPlayer(new Player({
+            const player = new Player({
+                id     : uuidv4(),
                 login  : login,
-                socket : socket
-            }));
+                socket : socket,
+            });
 
-            console.log(`player ${login} join room ${roomName}`);
+            try {
 
-            // Envoyer une notification aux autres joueurs de la salle
-            this.broadcastToOthersInRoom(roomName, {
-                type: 'playerJoined',
-                message: `player ${login} join room ${roomName}`
-            }, socket);
+                room.addPlayer(player);
+
+                console.log(`player ${login} join room ${roomName}`);
+
+                // Envoyer une notification aux autres joueurs de la salle
+                this.broadcastToOthersInRoom(roomName, {
+                    type: 'playerJoined',
+                    message: `player ${login} join room ${roomName}`
+                }, socket);
+
+                socket.emit('joinedRoom', {
+                    id : player.id
+                });
+            }
+            catch(e) {
+
+                if (e instanceof UserAlreadyExistError) {
+
+                    socket.emit('joinedRoom', {
+                        error : new UserAlreadyExistError
+                    });
+                }
+            }
         }
         else {
+
+            socket.emit('joinedRoom', {
+                id : player.id
+            });
 
             socket.send(JSON.stringify({
                 type: 'roomError',
@@ -97,10 +139,9 @@ export default class GameServer {
 
             console.log(`room ${roomName} created`);
 
-            socket.send(JSON.stringify({
-                type: 'createRoom',
-                data: { room }
-            }));
+            socket.emit('createdRoom', {
+                room : room
+            });
         }
         else {
 
@@ -113,23 +154,9 @@ export default class GameServer {
 
     handleGetRooms(socket) {
 
-        socket.send(JSON.stringify({
-            type: 'getRooms',
-            data: this.#rooms
-        }));
-    }
-
-    handlePlayerMove(socket, data) {
-
-        const { roomName } = data;
-
-        if (roomName) {
-
-            this.broadcastToOthersInRoom(roomName, {
-                type: 'playerMoved',
-                movement
-            }, socket);
-        }
+        socket.emit('getRooms', {
+            rooms : Array.from(this.#rooms.values())
+        });
     }
 
     handleClose(socket) {
@@ -155,35 +182,6 @@ export default class GameServer {
                 // this.rooms.delete(roomName);
                 // console.log(`room ${roomName} removed because empty`);
             }
-        }
-    }
-
-    handleMessage(socket, message) {
-
-        const { type, data } = JSON.parse(message);
-
-        switch (type) {
-            case 'createRoom':
-                this.handleCreateRoom(socket, data);
-            break;
-            case 'joinRoom':
-                this.handleJoinRoom(socket, data);
-            break;
-            case 'playerMove':
-                this.handlePlayerMove(socket, data);
-            break;
-            case 'getPlayersRoom':
-                this.handleGetPlayersRoom(socket, data);
-            break;
-            case 'getRooms':
-                this.handleGetRooms(socket);
-            break;
-            default:
-                socket.send(JSON.stringify({
-                    type: 'error',
-                    message: `this method is not handled ${type}`
-                }));
-            break;
         }
     }
 
