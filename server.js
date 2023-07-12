@@ -7,7 +7,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { Room } from './src/room.js';
 import { Player } from './src/player.js';
 
-import { UserAlreadyExistError } from './src/errors/index.js';
+import {
+    RoomNotExistError,
+    UserAlreadyExistError
+} from './src/errors/index.js';
+
+Map.prototype.toArray = function() {
+    return Array.from(this.values())
+};
 
 export default class GameServer {
 
@@ -50,6 +57,18 @@ export default class GameServer {
                 this.handleGetRooms(socket);
             });
 
+            socket.on('getAllPlayers', () => {
+                this.handleGetAllPlayers(socket);
+            });
+
+            socket.on('deletePlayer', data => {
+                this.handleDeletePlayer(socket, data);
+            });
+
+            socket.on('deleteAllPlayers', () => {
+                this.handleDeleteAllPlayers(socket);
+            });
+
             socket.on('close', () => {
                 this.handleClose(socket);
             });
@@ -65,9 +84,8 @@ export default class GameServer {
         if (room) {
 
             const player = new Player({
-                id     : uuidv4(),
-                login  : login,
-                socket : socket,
+                id    : uuidv4(),
+                login : login
             });
 
             try {
@@ -76,14 +94,12 @@ export default class GameServer {
 
                 console.log(`player ${login} join room ${roomName}`);
 
-                // Envoyer une notification aux autres joueurs de la salle
-                this.broadcastToOthersInRoom(roomName, {
-                    type: 'playerJoined',
-                    message: `player ${login} join room ${roomName}`
-                }, socket);
+                socket.broadcast.emit('joinedRoom', {
+                    player : player
+                });
 
                 socket.emit('joinedRoom', {
-                    id : player.id
+                    player : player
                 });
             }
             catch(e) {
@@ -99,13 +115,8 @@ export default class GameServer {
         else {
 
             socket.emit('joinedRoom', {
-                id : player.id
+                error : new RoomNotExistError
             });
-
-            socket.send(JSON.stringify({
-                type: 'roomError',
-                message: `room ${roomName} doesnt exist`
-            }));
         }
     }
 
@@ -155,8 +166,51 @@ export default class GameServer {
     handleGetRooms(socket) {
 
         socket.emit('getRooms', {
-            rooms : Array.from(this.#rooms.values())
+            rooms : this.#rooms.toArray()
         });
+    }
+
+    handleGetAllPlayers(socket) {
+
+        const rooms = Array.from(this.#rooms.values());
+
+        const players = rooms.map(room => {
+            return room.getPlayers().toArray();
+        });
+
+        socket.emit('getAllPlayers', {
+            players : players.flat()
+        });
+    }
+
+    handleDeletePlayer(socket, data) {
+
+        const { id } = data;
+
+        const rooms = this.#rooms.toArray();
+
+        rooms.map(room => {
+            room.getPlayers().delete(id);
+        });
+
+        socket.broadcast.emit('deletedPlayer', {
+            id : id
+        });
+        socket.emit('deletedPlayer', {
+            id : id
+        });
+    }
+
+    handleDeleteAllPlayers(socket) {
+
+        const rooms = this.#rooms.toArray();
+
+        rooms.map(room => {
+            room.deletePlayers();
+        });
+
+        socket.broadcast.emit('deletedAllPlayers');
+        socket.emit('deletedAllPlayers');
     }
 
     handleClose(socket) {
@@ -171,33 +225,13 @@ export default class GameServer {
 
             room.delete(socket);
 
-            // Envoyer une notification aux autres joueurs de la salle
-            this.broadcastToOthersInRoom(roomName, {
-                type: 'playerLeft',
-                message: `player left room ${roomName}`
-            }, socket);
+            socket.broadcast('playerLeft');
 
             // Supprimer la salle si elle est vide
             if (room.size === 0) {
                 // this.rooms.delete(roomName);
                 // console.log(`room ${roomName} removed because empty`);
             }
-        }
-    }
-
-    broadcastToOthersInRoom(roomName, message, sender) {
-        const room = this.#rooms.get(roomName);
-        for (const player of room.getPlayers()) {
-            if (player.socket !== sender) {
-                player.socket.send(JSON.stringify(message));
-            }
-        }
-    }
-
-    broadcastToRoom(roomName, message) {
-        const room = this.#rooms.get(roomName);
-        for (const player of room.getPlayers()) {
-            player.socket.send(JSON.stringify(message));
         }
     }
 }

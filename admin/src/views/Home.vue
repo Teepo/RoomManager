@@ -28,9 +28,10 @@
 			</v-table>
 
 			<v-container>
-				<v-btn class="bg-primary" @click="cleanPlayers">CLEAN PLAYERS</v-btn>
+				<v-btn class="bg-primary" @click="createPlayer">CREATE PLAYER</v-btn>
+				<v-btn class="bg-primary ml-5" @click="deleteAllPlayers">CLEAN PLAYERS</v-btn>
 			</v-container>
-			<div class="text-h6 mb-1">PLAYERS</div>
+			<div class="text-h6 mb-1">ALL PLAYERS</div>
 			<v-table class="text-left">
 				<thead>
 					<tr>
@@ -48,7 +49,7 @@
 						<td>{{ player.login }}</td>
 						<td>{{ player.isReady }}</td>
 						<td>
-							<v-btn icon="mdi-delete" @click="this.delete(player.id)"></v-btn>
+							<v-btn icon="mdi-delete" @click="this.deletePlayer(player.id)"></v-btn>
 						</td>
 					</tr>
 				</tbody>
@@ -77,43 +78,103 @@ export default {
 
         this.socket.on('connect', () => {
             this.socket.emit('getRooms');
+            this.socket.emit('getAllPlayers');
         });
 
 		this.socket.on('getRooms', data => {
-
-			const { rooms } = data;
-
-			this.handleGetRooms(rooms);
+			this.handleGetRooms(data);
         });
+
+		this.socket.on('getAllPlayers', data => {
+			this.handleGetAllPlayers(data);
+		});
 
 		this.socket.on('createdRoom', data => {
 			this.handleCreateRoom(data);
+        });
+
+		this.socket.on('joinedRoom', data => {
+			this.handleJoinedRoom(data);
+        });
+
+		this.socket.on('deletedPlayer', data => {
+			this.handleDeletePlayer(data);
+        });
+
+		this.socket.on('deletedAllPlayers', () => {
+			this.handleDeletedAllPlayers();
         });
     },
     methods : {
 
 		createRoom() {
 
-			console.log('emit', this.socket)
-
 			this.socket.emit('createRoom', {
                 roomName : 'petank'
             });
 		},
 
-        handleGetRooms(data) {
+		createPlayer() {
+			this.socket.emit('joinRoom', {
+				login    : this.generateRandomString(10),
+                roomName : 'petank'
+            });
+		},
 
-			this.rooms = data;
+		deletePlayer(id) {
+			this.socket.emit('deletePlayer', { id : id });
+		},
+
+		deleteAllPlayers() {
+			this.socket.emit('deleteAllPlayers');
+		},
+
+        handleGetRooms(data) {
+			const { rooms } = data;
+			this.rooms = rooms;
         },
+
+		handleGetAllPlayers(data) {
+			const { players } = data;
+			this.players = players;
+		},
 
 		handleCreateRoom(data) {
-
 			const { room } = data;
-
 			this.rooms.push(room);
-
-            console.log('handleGetRooms', data)
         },
+
+		handleJoinedRoom(data) {
+			const { player } = data;
+			console.log(player)
+			this.players.push(player);
+        },
+
+		handleDeletePlayer(data) {
+
+			const { id } = data;
+
+			this.players = this.players.filter(p => {
+                return p.id !== id;
+            }) ?? [];
+        },
+
+		handleDeletedAllPlayers() {
+			this.players = [];
+        },
+
+		generateRandomString(length) {
+
+			let string = '';
+			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+			for (let i = 0; i < length; i++) {
+				const randomIndex = Math.floor(Math.random() * chars.length);
+				string += chars.charAt(randomIndex);
+			}
+
+			return string;
+		}
     }
 }
 </script>

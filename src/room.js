@@ -7,16 +7,16 @@ export class Room {
 
     constructor(name) {
         this.name = name;
-        this.#players = [];
+        this.#players = new Map;
     }
 
     addPlayer(player) {
 
-        if (this.#players.find(p => p.login === player.login)) {
+        if (this.#players.has(player.id)) {
             throw new UserAlreadyExistError;
         }
 
-        this.#players.push(player);
+        this.#players.set(player.id, player);
     }
 
     getPlayers() {
@@ -25,11 +25,14 @@ export class Room {
 
     getPlayerBySocketId(socketId) {
 
-        let player;
-        if (!(player = this.#players.find(p => p.socketId === socketId))) {
-            throw new UserNotExistError;
+        if (this.#players.has(socketId)) {
+            throw new UserAlreadyExistError;
         }
 
-        return player;
+        this.#players.get(player.id);
+    }
+
+    deletePlayers() {
+        this.#players.clear()
     }
 }
