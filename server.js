@@ -2,7 +2,12 @@ import { createServer } from 'https';
 import { readFileSync } from 'fs';
 import { WebSocketServer } from 'ws';
 
+import { Room } from './src/room.js';
+import { Player } from './src/player.js';
+
 export default class GameServer {
+
+    #rooms = new Map;
 
     constructor() {
 
@@ -34,24 +39,44 @@ export default class GameServer {
 
     handleJoinRoom(socket, data) {
 
-        const { roomName } = data;
+        const { roomName, login } = data;
 
-        const room = this.rooms.get(roomName);
+        const room = this.#rooms.get(roomName);
 
         if (room) {
 
-            socket.room = roomName;
+            room.addPlayer(new Player({
+                login  : login,
+                socket : socket
+            }));
 
-            room.add(socket);
-
-            console.log(`player join room ${roomName}`);
+            console.log(`player ${login} join room ${roomName}`);
 
             // Envoyer une notification aux autres joueurs de la salle
-            this.sendToRoom(roomName, {
+            this.broadcastToOthersInRoom(roomName, {
                 type: 'playerJoined',
-                message: `player join room ${roomName}`
+                message: `player ${login} join room ${roomName}`
             }, socket);
-        } else {
+        }
+        else {
+
+            socket.send(JSON.stringify({
+                type: 'roomError',
+                message: `room ${roomName} doesnt exist`
+            }));
+        }
+    }
+
+    handleGetPlayersRoom(socket, data) {
+
+        const { roomName } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (room) {
+            socket.send(JSON.stringify(room.getPlayers()));
+        }
+        else {
 
             socket.send(JSON.stringify({
                 type: 'roomError',
@@ -64,13 +89,18 @@ export default class GameServer {
 
         const { roomName } = data;
 
-        if (!this.rooms.has(roomName)) {
+        if (!this.#rooms.has(roomName)) {
 
-            socket.room = roomName;
+            const room = new Room(roomName);
 
-            this.rooms.set(roomName, new Set([socket]));
+            this.#rooms.set(roomName, room)
 
             console.log(`room ${roomName} created`);
+
+            socket.send(JSON.stringify({
+                type: 'createRoom',
+                data: { room }
+            }));
         }
         else {
 
@@ -81,13 +111,21 @@ export default class GameServer {
         }
     }
 
+    handleGetRooms(socket) {
+
+        socket.send(JSON.stringify({
+            type: 'getRooms',
+            data: this.#rooms
+        }));
+    }
+
     handlePlayerMove(socket, data) {
 
         const { roomName } = data;
 
         if (roomName) {
 
-            this.sendToRoom(roomName, {
+            this.broadcastToOthersInRoom(roomName, {
                 type: 'playerMoved',
                 movement
             }, socket);
@@ -107,15 +145,15 @@ export default class GameServer {
             room.delete(socket);
 
             // Envoyer une notification aux autres joueurs de la salle
-            this.sendToRoom(roomName, {
+            this.broadcastToOthersInRoom(roomName, {
                 type: 'playerLeft',
                 message: `player left room ${roomName}`
             }, socket);
 
             // Supprimer la salle si elle est vide
             if (room.size === 0) {
-                this.rooms.delete(roomName);
-                console.log(`room ${roomName} removed because empty`);
+                // this.rooms.delete(roomName);
+                // console.log(`room ${roomName} removed because empty`);
             }
         }
     }
@@ -125,9 +163,6 @@ export default class GameServer {
         const { type, data } = JSON.parse(message);
 
         switch (type) {
-            case 'createPlayer':
-                this.handleCreatePlayer(socket, data);
-            break;
             case 'createRoom':
                 this.handleCreateRoom(socket, data);
             break;
@@ -137,21 +172,34 @@ export default class GameServer {
             case 'playerMove':
                 this.handlePlayerMove(socket, data);
             break;
+            case 'getPlayersRoom':
+                this.handleGetPlayersRoom(socket, data);
+            break;
+            case 'getRooms':
+                this.handleGetRooms(socket);
+            break;
             default:
                 socket.send(JSON.stringify({
                     type: 'error',
-                    message: 'this method is not handled'
+                    message: `this method is not handled ${type}`
                 }));
             break;
         }
     }
 
-    sendToRoom(roomName, message, sender) {
-        const room = this.rooms.get(roomName);
-        for (const socket of room) {
-            if (socket !== sender) {
-                socket.send(JSON.stringify(message));
+    broadcastToOthersInRoom(roomName, message, sender) {
+        const room = this.#rooms.get(roomName);
+        for (const player of room.getPlayers()) {
+            if (player.socket !== sender) {
+                player.socket.send(JSON.stringify(message));
             }
+        }
+    }
+
+    broadcastToRoom(roomName, message) {
+        const room = this.#rooms.get(roomName);
+        for (const player of room.getPlayers()) {
+            player.socket.send(JSON.stringify(message));
         }
     }
 }
