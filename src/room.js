@@ -1,18 +1,17 @@
 import { UserAlreadyExistError } from './errors/index.js';
-import { UserNotExistError     } from './errors/index.js';
 
 export class Room {
 
     #players;
 
     constructor(name) {
-        this.name = name;
+        this.name     = name;
         this.#players = new Map;
     }
 
     addPlayer(player) {
 
-        if (this.#players.has(player.id)) {
+        if (this.#players.toArray().find(p => p.login === player.login)) {
             throw new UserAlreadyExistError;
         }
 
@@ -23,13 +22,8 @@ export class Room {
         return this.#players;
     }
 
-    getPlayerBySocketId(socketId) {
-
-        if (this.#players.has(socketId)) {
-            throw new UserAlreadyExistError;
-        }
-
-        this.#players.get(player.id);
+    getPlayerById(socketId) {
+        return this.#players.get(socketId);
     }
 
     deletePlayers() {

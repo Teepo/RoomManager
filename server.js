@@ -9,7 +9,8 @@ import { Player } from './src/player.js';
 
 import {
     RoomNotExistError,
-    UserAlreadyExistError
+    UserAlreadyExistError,
+    UserNotExistError
 } from './src/errors/index.js';
 
 Map.prototype.toArray = function() {
@@ -55,6 +56,10 @@ export default class GameServer {
 
             socket.on('getRooms', () => {
                 this.handleGetRooms(socket);
+            });
+
+            socket.on('getPlayer', data => {
+                this.handleGetPlayer(socket, data);
             });
 
             socket.on('getAllPlayers', () => {
@@ -180,6 +185,31 @@ export default class GameServer {
 
         socket.emit('getAllPlayers', {
             players : players.flat()
+        });
+    }
+
+    handleGetPlayer(socket, data) {
+
+        const { id, roomName } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
+
+        const player = room.getPlayerById(id);
+
+        if (!player) {
+            return socket.emit('getPlayer', {
+                error : new UserNotExistError
+            });
+        }
+
+        socket.emit('getPlayer', {
+            players : player
         });
     }
 
