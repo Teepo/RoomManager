@@ -146,7 +146,6 @@ export default {
 
 		handleJoinedRoom(data) {
 			const { player } = data;
-			console.log(player)
 			this.players.push(player);
         },
 
