@@ -13,13 +13,15 @@
 			<v-table class="text-left">
 				<thead>
 					<tr>
-					<th class="text-left">NAME</th>
-					<th class="text-left">Actions</th>
+						<th class="text-left">NAME</th>
+						<th class="text-left">IS STARTED</th>
+						<th class="text-left">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-for="room in rooms" :key="room.name">
 						<td>{{ room.name }}</td>
+						<td>{{ room.isStarted }}</td>
 						<td>
 							<v-btn icon="mdi-delete"></v-btn>
 						</td>
@@ -38,11 +40,9 @@
 						<th class="text-left">ID</th>
 						<th class="text-left">LOGIN</th>
 						<th class="text-left">IS READY</th>
-						<th class="text-left">
-							Actions
-						</th>
-						</tr>
-					</thead>
+						<th class="text-left">Actions</th>
+					</tr>
+				</thead>
 				<tbody>
 					<tr v-for="player in players" :key="player.id">
 						<td class="text-left">{{ player.id }}</td>
@@ -81,6 +81,10 @@ export default {
             this.socket.emit('getAllPlayers');
         });
 
+		this.socket.on('start', data => {
+			this.handleStart(data);
+        });
+
 		this.socket.on('getRooms', data => {
 			this.handleGetRooms(data);
         });
@@ -107,6 +111,13 @@ export default {
     },
     methods : {
 
+		start() {
+
+			this.socket.emit('start', {
+                roomName : 'petank'
+            });
+		},
+
 		createRoom() {
 
 			this.socket.emit('createRoom', {
@@ -128,6 +139,13 @@ export default {
 		deleteAllPlayers() {
 			this.socket.emit('deleteAllPlayers');
 		},
+
+		handleStart(data) {
+
+			const { room } = data;
+
+			this.rooms.find(r => r.name == room.name).isStarted = room.isStarted;
+        },
 
         handleGetRooms(data) {
 			const { rooms } = data;

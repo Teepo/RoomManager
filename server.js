@@ -42,6 +42,10 @@ export default class GameServer {
         // Gérer les connexions des joueurs
         this.ws.on('connection', socket => {
 
+            socket.on('start', data => {
+                this.handleStart(socket, data);
+            });
+
             socket.on('joinRoom', data => {
                 this.handleJoinRoom(socket, data);
             });
@@ -82,6 +86,27 @@ export default class GameServer {
                 this.handleClose(socket);
             });
         });
+    }
+
+    handleStart(socket, data) {
+
+        const { roomName } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (room) {
+
+            room.isStarted = true;
+
+            socket.emit('start', { room : room });
+            socket.broadcast.emit('start', { room : room });
+        }
+        else {
+
+            socket.emit('joinedRoom', {
+                error : new RoomNotExistError
+            });
+        }
     }
 
     handleJoinRoom(socket, data) {

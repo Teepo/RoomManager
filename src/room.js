@@ -5,8 +5,9 @@ export class Room {
     #players;
 
     constructor(name) {
-        this.name     = name;
-        this.#players = new Map;
+        this.name      = name;
+        this.isStarted = false;
+        this.#players  = new Map;
     }
 
     addPlayer(player) {
