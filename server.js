@@ -66,6 +66,10 @@ export default class GameServer {
                 this.handleGetAllPlayers(socket);
             });
 
+            socket.on('setPlayerIsReady', data => {
+                this.handleSetPlayerIsReady(socket, data);
+            });
+
             socket.on('deletePlayer', data => {
                 this.handleDeletePlayer(socket, data);
             });
@@ -188,6 +192,18 @@ export default class GameServer {
         });
     }
 
+    handleSetPlayerIsReady(socket, data) {
+
+        const { player } = data;
+
+        player.isReady = !player.isReady;
+
+        socket.broadcast.emit('setPlayerIsReady', {
+            player : player
+        });
+    }
+
+
     handleGetPlayer(socket, data) {
 
         const { id, roomName } = data;
@@ -209,7 +225,7 @@ export default class GameServer {
         }
 
         socket.emit('getPlayer', {
-            players : player
+            player : player
         });
     }
 
