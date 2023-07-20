@@ -221,7 +221,7 @@ export default class GameServer {
 
     handleSetPlayerIsReady(socket, data) {
 
-        const { player, roomName } = data;
+        const { player, roomName, value } = data;
 
         const room = this.#rooms.get(roomName);
 
@@ -233,7 +233,7 @@ export default class GameServer {
 
         const p = room.getPlayerById(player.id);
 
-        p.isReady = !p.isReady;
+        p.isReady = value ?? !p.isReady;
 
         socket.emit('setPlayerIsReady', {
             player : p
