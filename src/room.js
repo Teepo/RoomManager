@@ -23,8 +23,8 @@ export class Room {
         return this.#players;
     }
 
-    getPlayerById(socketId) {
-        return this.#players.get(socketId);
+    getPlayerById(id) {
+        return this.#players.get(id);
     }
 
     deletePlayers() {

@@ -14,7 +14,7 @@ import {
 } from './src/errors/index.js';
 
 Map.prototype.toArray = function() {
-    return Array.from(this.values())
+    return Array.from(this.values());
 };
 
 export default class GameServer {
@@ -129,10 +129,12 @@ export default class GameServer {
                 console.log(`player ${login} join room ${roomName}`);
 
                 socket.broadcast.emit('joinedRoom', {
-                    player : player
+                    socketId : socket.id,
+                    player   : player
                 });
 
                 socket.emit('joinedRoom', {
+                    socketId : socket.id,
                     player : player
                 });
             }
@@ -219,12 +221,26 @@ export default class GameServer {
 
     handleSetPlayerIsReady(socket, data) {
 
-        const { player } = data;
+        const { player, roomName } = data;
 
-        player.isReady = !player.isReady;
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
+
+        const p = room.getPlayerById(player.id);
+
+        p.isReady = !p.isReady;
+
+        socket.emit('setPlayerIsReady', {
+            player : p
+        });
 
         socket.broadcast.emit('setPlayerIsReady', {
-            player : player
+            player : p
         });
     }
 
