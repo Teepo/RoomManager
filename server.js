@@ -237,7 +237,12 @@ export default class GameServer {
 
         const p = room.getPlayerById(player.id);
 
-        p.isReady = value ?? !p.isReady;
+        try {
+            p.isReady = value ?? !p.isReady;
+        }
+        catch(e) {
+            console.error('Try to update ready status', p);
+        }
 
         socket.emit('setPlayerIsReady', {
             player : p
@@ -247,7 +252,6 @@ export default class GameServer {
             player : p
         });
     }
-
 
     handleGetPlayer(socket, data) {
 
@@ -297,6 +301,10 @@ export default class GameServer {
         p.customData = customData;
 
         socket.emit('addPlayerCustomData', {
+            player : p
+        });
+
+        socket.broadcast.emit('addPlayerCustomData', {
             player : p
         });
     }
