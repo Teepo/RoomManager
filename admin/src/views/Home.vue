@@ -40,6 +40,7 @@
 						<th class="text-left">ID</th>
 						<th class="text-left">LOGIN</th>
 						<th class="text-left">IS READY</th>
+						<th class="text-left">CUSTOM DATA</th>
 						<th class="text-left">Actions</th>
 					</tr>
 				</thead>
@@ -48,6 +49,7 @@
 						<td class="text-left">{{ player.id }}</td>
 						<td>{{ player.login }}</td>
 						<td>{{ player.isReady }}</td>
+						<td>{{ player.customData }}</td>
 						<td>
 							<v-btn icon="mdi-delete" @click="this.deletePlayer(player.id)"></v-btn>
 						</td>

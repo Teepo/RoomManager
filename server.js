@@ -74,6 +74,10 @@ export default class GameServer {
                 this.handleSetPlayerIsReady(socket, data);
             });
 
+            socket.on('addPlayerCustomData', data => {
+                this.handleAddPlayerCustomData(socket, data);
+            });
+
             socket.on('deletePlayer', data => {
                 this.handleDeletePlayer(socket, data);
             });
@@ -270,6 +274,33 @@ export default class GameServer {
         });
     }
 
+    handleAddPlayerCustomData(socket, data) {
+
+        const { player, roomName, customData } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
+
+        const p = room.getPlayerById(player.id);
+
+        if (!p) {
+            return socket.emit('updatePlayer', {
+                error : new UserNotExistError
+            });
+        }
+
+        p.customData = customData;
+
+        socket.emit('addPlayerCustomData', {
+            player : p
+        });
+    }
+
     handleDeletePlayer(socket, data) {
 
         const { id } = data;
@@ -306,19 +337,22 @@ export default class GameServer {
 
         console.log('client disconnect');
 
-        if (roomName) {
+        const room = this.rooms.get(roomName);
 
-            const room = this.rooms.get(roomName);
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
 
-            room.delete(socket);
+        room.delete(socket);
 
-            socket.broadcast('playerLeft');
+        socket.broadcast('playerLeft');
 
-            // Supprimer la salle si elle est vide
-            if (room.size === 0) {
-                // this.rooms.delete(roomName);
-                // console.log(`room ${roomName} removed because empty`);
-            }
+        // Supprimer la salle si elle est vide
+        if (room.size === 0) {
+            this.rooms.delete(roomName);
+            console.log(`room ${roomName} removed because empty`);
         }
     }
 }
