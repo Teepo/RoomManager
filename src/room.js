@@ -27,6 +27,10 @@ export class Room {
         return this.#players.get(id);
     }
 
+    deletePlayer(id) {
+        this.#players.delete(id);
+    }
+
     deletePlayers() {
         this.#players.clear()
     }

@@ -50,8 +50,8 @@ export default class GameServer {
                 this.handleJoinRoom(socket, data);
             });
 
-            socket.on('getPlayersRoom', data => {
-                this.handleGetPlayersRoom(socket, data);
+            socket.on('leaveRoom', data => {
+                this.handleLeaveRoom(socket, data);
             });
 
             socket.on('createRoom', data => {
@@ -68,6 +68,10 @@ export default class GameServer {
 
             socket.on('getAllPlayers', () => {
                 this.handleGetAllPlayers(socket);
+            });
+
+            socket.on('getAllPlayersFromRoom', data => {
+                this.handleGetAllPlayersFromRoom(socket, data);
             });
 
             socket.on('setPlayerIsReady', data => {
@@ -160,22 +164,28 @@ export default class GameServer {
         }
     }
 
-    handleGetPlayersRoom(socket, data) {
+    handleLeaveRoom(socket, data) {
 
-        const { roomName } = data;
+        const { id, roomName } = data;
 
         const room = this.#rooms.get(roomName);
 
-        if (room) {
-            socket.send(JSON.stringify(room.getPlayers()));
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
         }
-        else {
 
-            socket.send(JSON.stringify({
-                type: 'roomError',
-                message: `room ${roomName} doesnt exist`
-            }));
-        }
+        room.deletePlayer(id);
+
+        console.log(`player ${id} leave room ${roomName}`);
+
+        socket.broadcast.emit('leavedRoom', {
+            id : id
+        });
+        socket.emit('leavedRoom', {
+            id : id
+        });
     }
 
     handleCreateRoom(socket, data) {
@@ -220,6 +230,23 @@ export default class GameServer {
 
         socket.emit('getAllPlayers', {
             players : players.flat()
+        });
+    }
+
+    handleGetAllPlayersFromRoom(socket, data) {
+
+        const { roomName } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
+
+        socket.emit('getAllPlayersFromRoom', {
+            players : room.getPlayers().toArray()
         });
     }
 
@@ -300,13 +327,7 @@ export default class GameServer {
 
         p.customData = customData;
 
-        socket.emit('addPlayerCustomData', {
-            player : p
-        });
-
-        socket.broadcast.emit('addPlayerCustomData', {
-            player : p
-        });
+        socket.emit('addedPlayerCustomData');
     }
 
     handleDeletePlayer(socket, data) {
@@ -316,8 +337,10 @@ export default class GameServer {
         const rooms = this.#rooms.toArray();
 
         rooms.map(room => {
-            room.getPlayers().delete(id);
+            room.deletePlayer(id);
         });
+
+        console.log(`player ${id} deleted from all rooms`);
 
         socket.broadcast.emit('deletedPlayer', {
             id : id

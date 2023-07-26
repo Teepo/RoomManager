@@ -103,6 +103,10 @@ export default {
 			this.handleJoinedRoom(data);
         });
 
+		this.socket.on('leavedRoom', data => {
+			this.handleLeavedRoom(data);
+        });
+
 		this.socket.on('deletedPlayer', data => {
 			this.handleDeletePlayer(data);
         });
@@ -167,6 +171,10 @@ export default {
 		handleJoinedRoom(data) {
 			const { player } = data;
 			this.players.push(player);
+        },
+
+		handleLeavedRoom(data) {
+			this.handleDeletePlayer(data);
         },
 
 		handleDeletePlayer(data) {
