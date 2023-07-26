@@ -327,7 +327,12 @@ export default class GameServer {
 
         p.customData = customData;
 
-        socket.emit('addedPlayerCustomData');
+        socket.emit('addedPlayerCustomData', {
+            player : p
+        });
+        socket.broadcast.emit('addedPlayerCustomData', {
+            player : p
+        });
     }
 
     handleDeletePlayer(socket, data) {
