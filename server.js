@@ -82,6 +82,10 @@ export default class GameServer {
                 this.handleAddPlayerCustomData(socket, data);
             });
 
+            socket.on('deleteRoom', data => {
+                this.handleDeleteRoom(socket, data);
+            });
+
             socket.on('deletePlayer', data => {
                 this.handleDeletePlayer(socket, data);
             });
@@ -111,7 +115,7 @@ export default class GameServer {
         }
         else {
 
-            socket.emit('joinedRoom', {
+            socket.emit('start', {
                 error : new RoomNotExistError
             });
         }
@@ -171,7 +175,7 @@ export default class GameServer {
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('getPlayer', {
+            return socket.emit('leavedRoom', {
                 error : new RoomNotExistError
             });
         }
@@ -240,7 +244,7 @@ export default class GameServer {
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('getPlayer', {
+            return socket.emit('getAllPlayersFromRoom', {
                 error : new RoomNotExistError
             });
         }
@@ -257,7 +261,7 @@ export default class GameServer {
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('getPlayer', {
+            return socket.emit('setPlayerIsReady', {
                 error : new RoomNotExistError
             });
         }
@@ -312,7 +316,7 @@ export default class GameServer {
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('getPlayer', {
+            return socket.emit('addedPlayerCustomData', {
                 error : new RoomNotExistError
             });
         }
@@ -320,7 +324,7 @@ export default class GameServer {
         const p = room.getPlayerById(player.id);
 
         if (!p) {
-            return socket.emit('updatePlayer', {
+            return socket.emit('addedPlayerCustomData', {
                 error : new UserNotExistError
             });
         }
@@ -332,6 +336,22 @@ export default class GameServer {
         });
         socket.broadcast.emit('addedPlayerCustomData', {
             player : p
+        });
+    }
+
+    handleDeleteRoom(socket, data) {
+
+        const { roomName } = data;
+
+        this.#rooms.delete(roomName);
+
+        console.log(`room ${roomName} deleted`);
+
+        socket.broadcast.emit('deletedRoom', {
+            roomName : roomName
+        });
+        socket.emit('deletedRoom', {
+            roomName : roomName
         });
     }
 
@@ -376,7 +396,7 @@ export default class GameServer {
         const room = this.rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('getPlayer', {
+            return socket.emit('close', {
                 error : new RoomNotExistError
             });
         }

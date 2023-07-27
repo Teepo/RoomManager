@@ -23,7 +23,7 @@
 						<td>{{ room.name }}</td>
 						<td>{{ room.isStarted }}</td>
 						<td>
-							<v-btn icon="mdi-delete"></v-btn>
+							<v-btn icon="mdi-delete" @click="this.deleteRoom(room.name)"></v-btn>
 						</td>
 					</tr>
 				</tbody>
@@ -107,8 +107,12 @@ export default {
 			this.handleLeavedRoom(data);
         });
 
+		this.socket.on('deletedRoom', data => {
+			this.handleDeletedRoom(data);
+        });
+
 		this.socket.on('deletedPlayer', data => {
-			this.handleDeletePlayer(data);
+			this.handleDeletedPlayer(data);
         });
 
 		this.socket.on('deletedAllPlayers', () => {
@@ -146,6 +150,10 @@ export default {
 			this.socket.emit('deleteAllPlayers');
 		},
 
+		deleteRoom(name) {
+			this.socket.emit('deleteRoom', { roomName : name });
+		},
+
 		handleStart(data) {
 
 			const { room } = data;
@@ -174,10 +182,10 @@ export default {
         },
 
 		handleLeavedRoom(data) {
-			this.handleDeletePlayer(data);
+			this.handleDeletedPlayer(data);
         },
 
-		handleDeletePlayer(data) {
+		handleDeletedPlayer(data) {
 
 			const { id } = data;
 
@@ -185,6 +193,15 @@ export default {
                 return p.id !== id;
             }) ?? [];
         },
+
+		handleDeletedRoom(data) {
+
+			const { roomName } = data;
+
+			this.rooms = this.rooms.filter(r => {
+				return r.name !== roomName;
+			}) ?? [];
+		},
 
 		handleDeletedAllPlayers() {
 			this.players = [];
