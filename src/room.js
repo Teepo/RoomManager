@@ -27,6 +27,10 @@ export class Room {
         return this.#players.get(id);
     }
 
+    updatePlayer(id, player) {
+        this.#players.set(id, player);
+    }
+
     deletePlayer(id) {
         this.#players.delete(id);
     }

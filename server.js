@@ -78,8 +78,8 @@ export default class GameServer {
                 this.handleSetPlayerIsReady(socket, data);
             });
 
-            socket.on('addPlayerCustomData', data => {
-                this.handleAddPlayerCustomData(socket, data);
+            socket.on('updatePlayer', data => {
+                this.handleUpdatePlayer(socket, data);
             });
 
             socket.on('deleteRoom', data => {
@@ -309,33 +309,31 @@ export default class GameServer {
         });
     }
 
-    handleAddPlayerCustomData(socket, data) {
+    handleUpdatePlayer(socket, data) {
 
-        const { player, roomName, customData } = data;
+        const { player, roomName } = data;
 
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('addedPlayerCustomData', {
+            return socket.emit('updatedPlayer', {
                 error : new RoomNotExistError
             });
         }
 
-        const p = room.getPlayerById(player.id);
-
-        if (!p) {
-            return socket.emit('addedPlayerCustomData', {
+        if (!room.getPlayerById(player.id)) {
+            return socket.emit('updatedPlayer', {
                 error : new UserNotExistError
             });
         }
 
-        p.customData = customData;
+        room.updatePlayer(player.id, player);
 
-        socket.emit('addedPlayerCustomData', {
-            player : p
+        socket.emit('updatedPlayer', {
+            player : player
         });
-        socket.broadcast.emit('addedPlayerCustomData', {
-            player : p
+        socket.broadcast.emit('updatedPlayer', {
+            player : player
         });
     }
 
