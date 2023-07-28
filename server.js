@@ -94,6 +94,10 @@ export default class GameServer {
                 this.handleDeleteAllPlayers(socket);
             });
 
+            socket.on('data', event => {
+                this.handleData(socket, event);
+            });
+
             socket.on('close', () => {
                 this.handleClose(socket);
             });
@@ -383,6 +387,29 @@ export default class GameServer {
 
         socket.broadcast.emit('deletedAllPlayers');
         socket.emit('deletedAllPlayers');
+    }
+
+    handleData(socket, event) {
+
+        const { id, roomName, eventType, data } = event;
+
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('getPlayer', {
+                error : new RoomNotExistError
+            });
+        }
+
+        const player = room.getPlayerById(id);
+
+        if (!player) {
+            return socket.emit('getPlayer', {
+                error : new UserNotExistError
+            });
+        }
+
+        socket.broadcast.emit(eventType, data);
     }
 
     handleClose(socket) {
