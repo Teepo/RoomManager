@@ -46,6 +46,10 @@ export default class GameServer {
                 this.handleStart(socket, data);
             });
 
+            socket.on('stop', data => {
+                this.handleStop(socket, data);
+            });
+
             socket.on('joinRoom', data => {
                 this.handleJoinRoom(socket, data);
             });
@@ -110,19 +114,44 @@ export default class GameServer {
 
         const room = this.#rooms.get(roomName);
 
-        if (room) {
-
-            room.isStarted = true;
-
-            socket.emit('start', { room : room });
-            socket.broadcast.emit('start', { room : room });
-        }
-        else {
-
-            socket.emit('start', {
+        if (!room) {
+            return socket.emit('start', {
                 error : new RoomNotExistError
             });
         }
+
+        room.isStarted = true;
+
+        socket.emit('start', { room : room });
+        socket.broadcast.emit('start', { room : room });
+    }
+
+    handleStop(socket, data) {
+
+        const { roomName } = data;
+
+        const room = this.#rooms.get(roomName);
+
+        if (!room) {
+            return socket.emit('start', {
+                error : new RoomNotExistError
+            });
+        }
+
+        room.isStarted = false;
+
+        room.getPlayers().toArray().map(player => {
+
+            try {
+                player.isReady = false;
+            }
+            catch(e) {
+                console.error('Try to update ready status', p);
+            }
+        });
+
+        socket.emit('stop');
+        socket.broadcast.emit('stop');
     }
 
     handleJoinRoom(socket, data) {
