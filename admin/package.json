@@ -16,7 +16,8 @@
     "vue": "^3.3.4",
     "vue-router": "^4.2.4",
     "vuetify": "^3.3.8",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",

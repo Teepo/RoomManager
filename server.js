@@ -1,3 +1,5 @@
+import yargs from 'yargs';
+
 import { createServer } from 'https';
 import { readFileSync } from 'fs';
 import { Server } from 'socket.io';
@@ -17,25 +19,43 @@ Map.prototype.toArray = function() {
     return Array.from(this.values());
 };
 
+const PORT = 3000;
+
 export default class GameServer {
 
     #rooms = new Map;
 
     constructor() {
 
-        const server = createServer({
-            cert : readFileSync('./certs/cert.pem'),
-            key  : readFileSync('./certs/key.pem')
-        });
+        const argv = yargs(process.argv).argv;
 
-        server.listen(3000);
+        const isHTTPS = argv.https ?? false;
 
-        this.ws = new Server(server, {
-            cors: {
-                origin: '*',
-                credentials: true
-            }
-        });
+        if (isHTTPS) {
+
+            const server = createServer({
+                cert : readFileSync('./certs/cert.pem'),
+                key  : readFileSync('./certs/key.pem')
+            });
+
+            server.listen(PORT);
+
+            this.ws = new Server(server, {
+                cors: {
+                    origin: '*',
+                    credentials: true
+                }
+            });
+        }
+        else {
+            this.ws = new Server(PORT, {
+                cors: {
+                    origin: '*',
+                    credentials: true
+                }
+            });
+        }
+
 
         this.rooms = new Map();
 

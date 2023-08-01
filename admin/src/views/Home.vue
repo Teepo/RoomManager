@@ -62,6 +62,8 @@
 
 <script>
 
+import { WS_PROTOCOL, WS_HOST, WS_PORT} from './../../../config/index.js';
+
 import { io } from 'socket.io-client';
 
 export default {
@@ -76,7 +78,7 @@ export default {
     
     async mounted() {
         
-        this.socket = new io(`wss://92.222.23.73:3000`);
+        this.socket = new io(`${WS_PROTOCOL}://${WS_HOST}:${WS_PORT}`);
 
         this.socket.on('connect', () => {
             this.socket.emit('getRooms');

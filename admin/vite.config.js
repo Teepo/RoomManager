@@ -1,29 +1,41 @@
-// Plugins
-import vue from '@vitejs/plugin-vue'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import yargs from 'yargs';
 
-// Utilities
-import { defineConfig } from 'vite'
-import { fileURLToPath, URL } from 'node:url'
+import vue from '@vitejs/plugin-vue';
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
+
+import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
 
 import basicSsl from '@vitejs/plugin-basic-ssl';
 
-// https://vitejs.dev/config/
+const argv = yargs(process.argv).argv;
+
+const isHTTPS = argv.https;
+
+const plugins = [
+  vue({
+    template: {
+      transformAssetUrls
+    }
+  }),
+  vuetify({
+    autoImport: true
+  }),
+];
+
+if (isHTTPS) {
+  plugins.push(basicSsl());
+}
+
 export default defineConfig({
-  plugins: [
-    vue({ 
-      template: { transformAssetUrls }
-    }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
-    vuetify({
-      autoImport: true
-    }),
-    basicSsl(),
-  ],
-  define: { 'process.env': {} },
+  plugins: plugins,
+  define: {
+    'process.env': {}
+  },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src',
+        import.meta.url))
     },
     extensions: [
       '.js',
