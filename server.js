@@ -180,44 +180,42 @@ export default class GameServer {
 
         const room = this.#rooms.get(roomName);
 
-        if (room) {
-
-            const player = new Player({
-                id    : uuidv4(),
-                login : login
-            });
-
-            try {
-
-                room.addPlayer(player);
-
-                console.log(`player ${login} join room ${roomName}`);
-
-                socket.broadcast.emit('joinedRoom', {
-                    socketId : socket.id,
-                    player   : player
-                });
-
-                socket.emit('joinedRoom', {
-                    socketId : socket.id,
-                    player : player
-                });
-            }
-            catch(e) {
-
-                if (e instanceof UserAlreadyExistError) {
-
-                    socket.emit('joinedRoom', {
-                        error : new UserAlreadyExistError
-                    });
-                }
-            }
-        }
-        else {
-
-            socket.emit('joinedRoom', {
+        if (!room) {
+            return socket.emit('joinedRoom', {
                 error : new RoomNotExistError
             });
+        }
+
+        const player = new Player({
+            id       : uuidv4(),
+            login    : login,
+            roomName : roomName,
+        });
+
+        try {
+
+            room.addPlayer(player);
+
+            console.log(`player ${login} join room ${roomName}`);
+
+            socket.broadcast.emit('joinedRoom', {
+                socketId : socket.id,
+                player   : player
+            });
+
+            socket.emit('joinedRoom', {
+                socketId : socket.id,
+                player : player
+            });
+        }
+        catch(e) {
+
+            if (e instanceof UserAlreadyExistError) {
+
+                socket.emit('joinedRoom', {
+                    error : new UserAlreadyExistError
+                });
+            }
         }
     }
 
