@@ -153,7 +153,7 @@ export default class GameServer {
         const room = this.#rooms.get(roomName);
 
         if (!room) {
-            return socket.emit('start', {
+            return socket.emit('stop', {
                 error : new RoomNotExistError
             });
         }
@@ -176,7 +176,7 @@ export default class GameServer {
 
     handleJoinRoom(socket, data) {
 
-        const { roomName, login } = data;
+        const { roomName, id, login } = data;
 
         const room = this.#rooms.get(roomName);
 
@@ -187,7 +187,7 @@ export default class GameServer {
         }
 
         const player = new Player({
-            id       : uuidv4(),
+            id       : id ? id : uuidv4(),
             login    : login,
             roomName : roomName,
         });
