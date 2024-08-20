@@ -11,15 +11,20 @@
 			<v-table class="text-left">
 				<thead>
 					<tr>
+						<th class="text-left">ID</th>					
 						<th class="text-left">NAME</th>
-						<th class="text-left">IS STARTED</th>
-						<th class="text-left">Actions</th>
+						<th class="text-left">IS STARTED ?</th>
+						<th class="text-left">SETTINGS</th>						
+						<th class="text-left">ACTIONS</th>
 					</tr>
 				</thead>
 				<tbody>
+				{{ console.log(rooms) }}
 					<tr v-for="room in rooms" :key="room.name">
+					     	<td>{{ room.id }}</td>
 						<td>{{ room.name }}</td>
 						<td>{{ room.isStarted }}</td>
+						<td>{{ room.settings }}</td>
 						<td>
 							<v-btn icon="mdi-play" @click="this.startRoom(room.name)"></v-btn>
 							<v-btn icon="mdi-delete" @click="this.deleteRoom(room.name)"></v-btn>
@@ -39,9 +44,9 @@
 						<th class="text-left">ID</th>
 						<th class="text-left">LOGIN</th>
 						<th class="text-left">ROOM</th>
-						<th class="text-left">IS READY</th>
+						<th class="text-left">IS READY ?</th>
 						<th class="text-left">CUSTOM DATA</th>
-						<th class="text-left">Actions</th>
+						<th class="text-left">ACTIONS</th>
 					</tr>
 				</thead>
 				<tbody>
