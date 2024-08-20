@@ -1,13 +1,18 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import { UserAlreadyExistError } from './errors/index.js';
 
 export class Room {
 
     #players;
 
-    constructor(name) {
+    constructor({ name, settings }) {
+	this.id        = uuidv4();
         this.name      = name;
         this.isStarted = false;
         this.#players  = new Map;
+
+	this.settings  = settings;
     }
 
     addPlayer(player) {
@@ -37,5 +42,9 @@ export class Room {
 
     deletePlayers() {
         this.#players.clear()
+    }
+
+    getSettings() {
+	return this.settings;
     }
 }

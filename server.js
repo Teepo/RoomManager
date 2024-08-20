@@ -245,11 +245,11 @@ export default class GameServer {
 
     handleCreateRoom(socket, data) {
 
-        const { roomName } = data;
+        const { name } = data;
 
         if (!this.#rooms.has(roomName)) {
 
-            const room = new Room(roomName);
+            const room = new Room(data);
 
             this.#rooms.set(roomName, room)
 
