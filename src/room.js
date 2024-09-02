@@ -7,12 +7,12 @@ export class Room {
     #players;
 
     constructor({ name, settings }) {
-	this.id        = uuidv4();
+	    this.id        = uuidv4();
         this.name      = name;
         this.isStarted = false;
         this.#players  = new Map;
 
-	this.settings  = settings;
+	    this.settings  = settings;
     }
 
     addPlayer(player) {
@@ -45,6 +45,6 @@ export class Room {
     }
 
     getSettings() {
-	return this.settings;
+	    return this.settings;
     }
 }
