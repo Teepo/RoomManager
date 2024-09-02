@@ -1,4 +1,4 @@
-import { rooms } from './../store/index';
+import { rooms } from '../../store/index';
 
 export default function(socket, data, callback) {
 

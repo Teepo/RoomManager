@@ -1,23 +1,22 @@
 const eventHandlers = {
     
-    start: (socket, data, callback) => import('./start.js').then(module => module.default(socket, data, callback)),
-    stop: (socket, data, callback) => import('./stop.js').then(module => module.default(socket, data, callback)),
-    data: (socket, data, callback) => import('./data.js').then(module => module.default(socket, data, callback)),
-    close: (socket, data, callback) => import('./close.js').then(module => module.default(socket, data, callback)),
+    'data': (socket, data, callback) => import('./data.js').then(module => module.default(socket, data, callback)),
+    'close': (socket, data, callback) => import('./close.js').then(module => module.default(socket, data, callback)),
    
-    joinRoom: (socket, data, callback) => import('./joinRoom.js').then(module => module.default(socket, data, callback)),
-    leaveRoom: (socket, data, callback) => import('./leaveRoom.js').then(module => module.default(socket, data, callback)),
-    joinRoom: (socket, data, callback) => import('./joinRoom.js').then(module => module.default(socket, data, callback)),
-    createRoom: (socket, data, callback) => import('./createRoom.js').then(module => module.default(socket, data, callback)),
-    getRooms: (socket, data, callback) => import('./getRooms.js').then(module => module.default(socket, data, callback)),
-    deleteRoom: (socket, data, callback) => import('./deleteRoom.js').then(module => module.default(socket, data, callback)),
+    'room/start': (socket, data, callback) => import('./room/start.js').then(module => module.default(socket, data, callback)),
+    'room/stop': (socket, data, callback) => import('./room/stop.js').then(module => module.default(socket, data, callback)),
+    'room/join': (socket, data, callback) => import('./room/join.js').then(module => module.default(socket, data, callback)),
+    'room/leave': (socket, data, callback) => import('./room/leave.js').then(module => module.default(socket, data, callback)),
+    'room/create': (socket, data, callback) => import('./room/create.js').then(module => module.default(socket, data, callback)),
+    'room/get': (socket, data, callback) => import('./room/get.js').then(module => module.default(socket, data, callback)),
+    'room/delete': (socket, data, callback) => import('./room/delete.js').then(module => module.default(socket, data, callback)),
     
-    getPlayer: (socket, data, callback) => import('./getPlayer.js').then(module => module.default(socket, data, callback)),
-    getAllPlayers: (socket, data, callback) => import('./getAllPlayers.js').then(module => module.default(socket, data, callback)),
-    getAllPlayersFromRoom: (socket, data, callback) => import('./getAllPlayersFromRoom.js').then(module => module.default(socket, data, callback)),
-    setPlayerIsReady: (socket, data, callback) => import('./setPlayerIsReady.js').then(module => module.default(socket, data, callback)),
-    updatePlayer: (socket, data, callback) => import('./updatePlayer.js').then(module => module.default(socket, data, callback)),
-    deletePlayer: (socket, data, callback) => import('./deletePlayer.js').then(module => module.default(socket, data, callback)),
+    'player/get': (socket, data, callback) => import('./player/get.js').then(module => module.default(socket, data, callback)),
+    'player/getAll': (socket, data, callback) => import('./player/getAll.js').then(module => module.default(socket, data, callback)),
+    'player/getAllFromRoom': (socket, data, callback) => import('./player/getAllFromRoom.js').then(module => module.default(socket, data, callback)),
+    'player/setIsReady': (socket, data, callback) => import('./player/setIsReady.js').then(module => module.default(socket, data, callback)),
+    'player/update': (socket, data, callback) => import('./player/update.js').then(module => module.default(socket, data, callback)),
+    'player/delete': (socket, data, callback) => import('./player/delete.js').then(module => module.default(socket, data, callback)),
 };
 
 export default eventHandlers;

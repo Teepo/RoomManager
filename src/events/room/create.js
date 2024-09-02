@@ -1,4 +1,4 @@
-import { rooms } from './../store/index';
+import { rooms } from '../../store/index';
 
 export default function(socket, data, callback) {
 
@@ -15,6 +15,8 @@ export default function(socket, data, callback) {
         socket.emit('createdRoom', {
             room : room
         });
+
+        callback({ room });
     }
     else {
 
@@ -24,6 +26,10 @@ export default function(socket, data, callback) {
         }));
 
         socket.emit('createdRoom', {
+            error : new UserAlreadyExistError
+        });
+
+        callback({
             error : new UserAlreadyExistError
         });
     }
