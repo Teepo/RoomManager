@@ -7,12 +7,16 @@ export default function(socket, data, callback) {
     const room = rooms.get(roomId);
 
     if (!room) {
-        return socket.emit('getAllPlayersForRoom', {
+        return socket.emit('player/getAllFromRoom', {
             error : new RoomNotExistError
         });
     }
 
-    socket.emit('getAllPlayersForRoom', {
+    const response = {
         players : room.getPlayers().toArray()
-    });
+    };
+
+    socket.emit('player/getAllFromRoom', response);
+
+    callback(response);
 };

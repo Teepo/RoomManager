@@ -7,10 +7,13 @@ export class Room {
     #players;
 
     constructor({ name, settings }) {
-	    this.id        = uuidv4();
+	    
+        this.id        = uuidv4();
         this.name      = name;
         this.isStarted = false;
         this.#players  = new Map;
+
+        this.owner     = null
 
 	    this.settings  = settings;
     }
@@ -46,5 +49,9 @@ export class Room {
 
     getSettings() {
 	    return this.settings;
+    }
+
+    setOwner(player) {
+        this.owner = player;
     }
 }

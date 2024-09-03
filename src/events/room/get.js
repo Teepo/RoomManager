@@ -2,7 +2,15 @@ import { rooms } from '../../store/index';
 
 export default function(socket, data, callback) {
 
-    socket.emit('getRooms', {
-        rooms : rooms.toArray()
-    });
+    const { roomId } = data;
+
+    const room = rooms.get(roomId);
+
+    if (!room) {
+        return callback({
+            error : new RoomNotExistError
+        });
+    }
+
+    callback({ room });
 };

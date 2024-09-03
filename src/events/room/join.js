@@ -2,9 +2,9 @@ import { rooms } from '../../store/index';
 
 export default function(socket, data, callback) {
 
-    const { roomName, id, login } = data;
+    const { roomId, id, login } = data;
 
-    const room = rooms.get(roomName);
+    const room = rooms.get(roomId);
 
     if (!room) {
         return socket.emit('joinedRoom', {
@@ -13,9 +13,9 @@ export default function(socket, data, callback) {
     }
 
     const player = new Player({
-        id       : id ? id : uuidv4(),
-        login    : login,
-        roomName : roomName,
+        id     : id ? id : uuidv4(),
+        login  : login,
+        roomId : roomId,
     });
 
     try {
@@ -31,7 +31,12 @@ export default function(socket, data, callback) {
 
         socket.emit('joinedRoom', {
             socketId : socket.id,
-            player : player
+            player   : player
+        });
+
+        callback({
+            socketId : socket.id,
+            player  : player
         });
     }
     catch(e) {

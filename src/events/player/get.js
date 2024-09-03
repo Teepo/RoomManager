@@ -2,7 +2,7 @@ import { rooms } from '../../store/index';
 
 export default function(socket, data, callback) {
 
-    const { id, roomId } = data;
+    const { playerId, roomId } = data;
 
     const room = rooms.get(roomId);
 
@@ -12,7 +12,7 @@ export default function(socket, data, callback) {
         });
     }
 
-    const player = room.getPlayerById(id);
+    const player = room.getPlayerById(playerId);
 
     if (!player) {
         return socket.emit('getPlayer', {
@@ -20,7 +20,9 @@ export default function(socket, data, callback) {
         });
     }
 
-    socket.emit('getPlayer', {
-        player : player
-    });
+    const response = { player };
+
+    socket.emit('getPlayer', response);
+
+    callback(response);
 };

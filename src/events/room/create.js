@@ -8,7 +8,7 @@ export default function(socket, data, callback) {
 
         const room = new Room(data);
 
-        rooms.set(roomName, room)
+        rooms.set(room.id, room)
 
         console.log(`room ${roomName} created`);
 
