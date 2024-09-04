@@ -1,4 +1,10 @@
-import { rooms } from '../../store/index';
+import { v4 as uuidv4 } from 'uuid';
+
+import { rooms } from '../../store/index.js';
+
+import { RoomNotExistError, UserAlreadyExistError } from './../../errors/index.js';
+
+import { Player } from './../../player.js';
 
 export default function(socket, data, callback) {
 
@@ -7,9 +13,14 @@ export default function(socket, data, callback) {
     const room = rooms.get(roomId);
 
     if (!room) {
-        return socket.emit('joinedRoom', {
+
+        const response = {
             error : new RoomNotExistError
-        });
+        };
+
+        socket.emit('room/join', response);
+        callback(response);
+        return;
     }
 
     const player = new Player({
@@ -18,11 +29,13 @@ export default function(socket, data, callback) {
         roomId : roomId,
     });
 
+    console.log(player);
+
     try {
 
         room.addPlayer(player);
 
-        console.log(`player ${login} join room ${roomName}`);
+        console.log(`player ${login} join room ${room.name}`);
 
         const response = {
             socketId : socket.id,
@@ -34,6 +47,8 @@ export default function(socket, data, callback) {
         callback(response);
     }
     catch(e) {
+
+        console.log(e);
 
         if (e instanceof UserAlreadyExistError) {
 

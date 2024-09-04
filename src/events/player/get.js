@@ -1,4 +1,6 @@
-import { rooms } from '../../store/index';
+import { rooms } from '../../store/index.js';
+
+import { UserNotExistError, RoomNotExistError } from './../../errors/index.js';
 
 export default function(socket, data, callback) {
 
@@ -7,21 +9,25 @@ export default function(socket, data, callback) {
     const room = rooms.get(roomId);
 
     if (!room) {
-        return socket.emit('getPlayer', {
-            error : new RoomNotExistError
-        });
+
+        const response = { error : new RoomNotExistError };
+
+        socket.emit('player/get', response);
+        return callback(response);
     }
 
     const player = room.getPlayerById(playerId);
 
     if (!player) {
-        return socket.emit('getPlayer', {
-            error : new UserNotExistError
-        });
+
+        const response = { error : new UserNotExistError };
+
+        socket.emit('player/get', response);
+        return callback(response);
     }
 
     const response = { player };
 
-    socket.emit('getPlayer', response);
+    socket.emit('player/get', response);
     callback(response);
 };

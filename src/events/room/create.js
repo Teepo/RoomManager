@@ -1,12 +1,22 @@
-import { rooms } from '../../store/index';
+import { v4 as uuidv4 } from 'uuid';
+
+import { rooms } from './../../store/index.js';
+
+import { RoomAlreadyExistError } from './../../errors/index.js';
+
+import { Room } from './../../room.js';
 
 export default function(socket, data, callback) {
 
-    const { roomName } = data;
+    const { id, roomName, settings } = data;
 
     if (!rooms.has(roomName)) {
 
-        const room = new Room(data);
+        const room = new Room({
+            id       : id ? id : uuidv4(),
+            name     : roomName,
+            settings : settings
+        });
 
         rooms.set(room.id, room);
 
@@ -22,8 +32,7 @@ export default function(socket, data, callback) {
             error : new RoomAlreadyExistError
         };
 
-        socket.send(JSON.stringify(response));
-        socket.emit('createdRoom', response);
+        socket.emit('room/create', response);
         callback(response);
     }
 };

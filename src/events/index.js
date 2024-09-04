@@ -10,6 +10,7 @@ const eventHandlers = {
     'room/create': (socket, data, callback) => import('./room/create.js').then(module => module.default(socket, data, callback)),
     'room/get': (socket, data, callback) => import('./room/get.js').then(module => module.default(socket, data, callback)),
     'room/delete': (socket, data, callback) => import('./room/delete.js').then(module => module.default(socket, data, callback)),
+    'room/setOwner': (socket, data, callback) => import('./room/setOwner.js').then(module => module.default(socket, data, callback)),
     
     'player/get': (socket, data, callback) => import('./player/get.js').then(module => module.default(socket, data, callback)),
     'player/getAll': (socket, data, callback) => import('./player/getAll.js').then(module => module.default(socket, data, callback)),

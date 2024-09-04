@@ -1,14 +1,12 @@
-import { v4 as uuidv4 } from 'uuid';
-
 import { UserAlreadyExistError } from './errors/index.js';
 
 export class Room {
 
     #players;
 
-    constructor({ name, settings }) {
+    constructor({ id, name, settings }) {
 	    
-        this.id        = uuidv4();
+        this.id        = id;
         this.name      = name;
         this.isStarted = false;
         this.#players  = new Map;
