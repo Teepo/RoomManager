@@ -8,29 +8,22 @@ export default function(socket, data, callback) {
 
         const room = new Room(data);
 
-        rooms.set(room.id, room)
+        rooms.set(room.id, room);
 
         console.log(`room ${roomName} created`);
 
-        socket.emit('createdRoom', {
-            room : room
-        });
+        socket.emit('createdRoom', { room });
 
         callback({ room });
     }
     else {
 
-        socket.send(JSON.stringify({
-            type: 'roomError',
-            message: `room ${roomName} already exist`
-        }));
+        const response = {
+            error : new RoomAlreadyExistError
+        };
 
-        socket.emit('createdRoom', {
-            error : new UserAlreadyExistError
-        });
-
-        callback({
-            error : new UserAlreadyExistError
-        });
+        socket.send(JSON.stringify(response));
+        socket.emit('createdRoom', response);
+        callback(response);
     }
 };

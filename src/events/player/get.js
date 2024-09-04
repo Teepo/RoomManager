@@ -23,6 +23,5 @@ export default function(socket, data, callback) {
     const response = { player };
 
     socket.emit('getPlayer', response);
-
     callback(response);
 };

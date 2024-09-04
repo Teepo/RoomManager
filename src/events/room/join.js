@@ -24,28 +24,25 @@ export default function(socket, data, callback) {
 
         console.log(`player ${login} join room ${roomName}`);
 
-        socket.broadcast.emit('joinedRoom', {
+        const response = {
             socketId : socket.id,
             player   : player
-        });
+        };
 
-        socket.emit('joinedRoom', {
-            socketId : socket.id,
-            player   : player
-        });
-
-        callback({
-            socketId : socket.id,
-            player  : player
-        });
+        socket.broadcast.emit('room/join', response);
+        socket.emit('room/join', response);
+        callback(response);
     }
     catch(e) {
 
         if (e instanceof UserAlreadyExistError) {
 
-            socket.emit('joinedRoom', {
+            const response = {
                 error : new UserAlreadyExistError
-            });
+            };
+            
+            socket.emit('room/join', response);
+            callback(response);
         }
     }
 };

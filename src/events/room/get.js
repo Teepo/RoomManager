@@ -12,5 +12,7 @@ export default function(socket, data, callback) {
         });
     }
 
+    socket.emit('room/get', { room });
+
     callback({ room });
 };
