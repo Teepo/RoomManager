@@ -1,4 +1,6 @@
-import { rooms } from '../../store/index';
+import { rooms } from '../../store/index.js';
+
+import { RoomAlreadyExistError } from './../../errors/index.js';
 
 export default function(socket, data, callback) {
 

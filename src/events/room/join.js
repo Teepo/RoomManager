@@ -29,8 +29,6 @@ export default function(socket, data, callback) {
         roomId : roomId,
     });
 
-    console.log(player);
-
     try {
 
         room.addPlayer(player);
@@ -47,8 +45,6 @@ export default function(socket, data, callback) {
         callback(response);
     }
     catch(e) {
-
-        console.log(e);
 
         if (e instanceof UserAlreadyExistError) {
 

@@ -1,25 +1,25 @@
-import { rooms } from '../../store/index';
+import { rooms } from '../../store/index.js';
+
+import { RoomNotExistError } from './../../errors/index.js';
 
 export default function(socket, data, callback) {
 
-    const { id, roomName } = data;
+    const { playerId, roomId } = data;
 
-    const room = rooms.get(roomName);
+    const room = rooms.get(roomId);
 
     if (!room) {
-        return socket.emit('leavedRoom', {
+        return socket.emit('room/leave', {
             error : new RoomNotExistError
         });
     }
 
-    room.deletePlayer(id);
+    room.deletePlayer(playerId);
 
-    console.log(`player ${id} leave room ${roomName}`);
+    console.log(`player ${playerId} leave room ${roomName}`);
 
-    socket.broadcast.emit('leavedRoom', {
-        id : id
-    });
-    socket.emit('leavedRoom', {
-        id : id
-    });
+    const response = { playerId };
+
+    socket.broadcast.emit('room/leave', response);
+    socket.emit('room/leave', response);
 };

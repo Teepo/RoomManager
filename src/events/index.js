@@ -15,7 +15,7 @@ const eventHandlers = {
     'player/get': (socket, data, callback) => import('./player/get.js').then(module => module.default(socket, data, callback)),
     'player/getAll': (socket, data, callback) => import('./player/getAll.js').then(module => module.default(socket, data, callback)),
     'player/getAllFromRoom': (socket, data, callback) => import('./player/getAllFromRoom.js').then(module => module.default(socket, data, callback)),
-    'player/setIsReady': (socket, data, callback) => import('./player/setIsReady.js').then(module => module.default(socket, data, callback)),
+    'player/toggleIsReady': (socket, data, callback) => import('./player/toggleIsReady.js').then(module => module.default(socket, data, callback)),
     'player/update': (socket, data, callback) => import('./player/update.js').then(module => module.default(socket, data, callback)),
     'player/delete': (socket, data, callback) => import('./player/delete.js').then(module => module.default(socket, data, callback)),
 };
