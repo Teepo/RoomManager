@@ -1,23 +1,25 @@
-import { rooms } from './../store/index';
+import { rooms } from './../../store/index.js';
+
+import { RoomNotExistError } from './../../errors/index.js';
 
 export default function(socket, data, callback) {
 
-    const { roomName } = data;
+    const { roomId } = data;
 
-    const room = rooms.get(roomName);
+    const room = rooms.get(roomId);
 
     if (!room) {
-        return socket.emit('start', {
-            error : new RoomNotExistError
-        });
+
+        const response = { error : new RoomNotExistError };
+
+        socket.emit('room/start', response)
+        return callback(response);
     }
 
     room.isStarted = true;
 
     const response = { room };
 
-    socket.emit('start', response);
-    socket.broadcast.emit('start', response);
-
-    callback(response);
+    socket.broadcast.emit('room/start', response);
+    return callback(response);
 };
