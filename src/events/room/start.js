@@ -20,6 +20,7 @@ export default function(socket, data, callback) {
 
     const response = { room };
 
+    socket.emit('room/start', response);
     socket.broadcast.emit('room/start', response);
     return callback(response);
 };

@@ -8,8 +8,6 @@ export default function(socket, data, callback) {
 
     const room = rooms.get(roomId);
 
-    console.log('toggleIsReady', room);
-
     if (!room) {
         const response = { error : new RoomNotExistError };
         socket.emit('player/toggleIsReady', response);
@@ -17,8 +15,6 @@ export default function(socket, data, callback) {
     }
 
     const player = room.getPlayerById(playerId);
-
-    console.log('toggleIsReady', player);
 
     try {
         player.isReady = value ?? !player.isReady;
